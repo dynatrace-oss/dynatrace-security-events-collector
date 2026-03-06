@@ -1,0 +1,34 @@
+dist:
+  name: otelcol-securityevents
+  description: OpenTelemetry Collector with Security Event Processor and Exporter for Dynatrace
+  output_path: ./dist
+  otelcol_version: v0.145.0
+  module: github.com/dynatrace-oss/dynatrace-security-events-collector
+
+receivers:
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.145.0
+
+processors:
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.145.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.145.0
+  # Custom Security Event Processor (local monorepo module)
+  - gomod: github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor v0.0.0
+
+exporters:
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.145.0
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.145.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.145.0
+  # Custom Security Event Exporter (local monorepo module)
+  - gomod: github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter v0.0.0
+
+replaces:
+  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor => ./src/SecurityLogEventProcessor
+  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter => ./src/SecurityEventExporter

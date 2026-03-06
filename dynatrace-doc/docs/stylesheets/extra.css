@@ -1,0 +1,113 @@
+/* Dynatrace-inspired color scheme */
+:root {
+  --md-primary-fg-color: #1496FF;
+  --md-primary-fg-color--light: #4db0ff;
+  --md-primary-fg-color--dark: #0077cc;
+  --md-accent-fg-color: #6F42C1;
+  --dt-bg-surface: #f5f7fa;
+  --dt-border: #d1d9e0;
+  --dt-text-muted: #6c757d;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #1496FF;
+  --md-primary-fg-color--light: #4db0ff;
+  --md-primary-fg-color--dark: #0077cc;
+}
+
+/* Breadcrumb-style subtitle */
+.dt-breadcrumb {
+  font-size: 0.85rem;
+  color: var(--dt-text-muted);
+  margin-bottom: 0.5rem;
+}
+.dt-breadcrumb a {
+  color: var(--md-primary-fg-color);
+  text-decoration: none;
+}
+.dt-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Version badge */
+.dt-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+.dt-badge--grail {
+  background: #e8f4fd;
+  color: #0077cc;
+  border: 1px solid #b3d9f2;
+}
+.dt-badge--version {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+.dt-badge--guide {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+}
+
+/* Step numbers */
+.dt-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.dt-step-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.dt-step-content {
+  flex: 1;
+}
+
+/* Architecture diagram container */
+.dt-architecture {
+  background: var(--dt-bg-surface);
+  border: 1px solid var(--dt-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+/* Placeholder box for future content */
+.dt-placeholder {
+  background: var(--dt-bg-surface);
+  border: 2px dashed var(--dt-border);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--dt-text-muted);
+  margin: 1.5rem 0;
+}
+
+/* Info callout matching DT style */
+.dt-callout {
+  background: #e8f4fd;
+  border-left: 4px solid var(--md-primary-fg-color);
+  padding: 1rem 1.25rem;
+  border-radius: 0 4px 4px 0;
+  margin: 1rem 0;
+}
+.dt-callout p {
+  margin: 0;
+}

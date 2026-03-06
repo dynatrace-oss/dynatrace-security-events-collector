@@ -1,0 +1,58 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  k8sobjects:
+    auth_type: serviceAccount
+    objects:
+      - name: clusterreports
+        group: openreports.io
+        mode: pull
+        interval: 10m
+      - name: reports
+        group: openreports.io
+        mode: pull
+        interval: 10m
+
+processors:
+  batch:
+    send_batch_max_size: 1000
+    timeout: 30s
+    send_batch_size: 800
+
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 70
+    spike_limit_percentage: 30
+
+  securityevent:
+    processors:
+      openreports:
+        enabled: true
+
+exporters:
+  securityevent:
+    endpoint: "${DT_ENDPOINT}/platform/ingest/v1/security.events"
+    timeout: 30s
+    headers:
+      Authorization: "Api-Token ${DT_API_TOKEN}"
+      Content-Type: "application/json"
+
+  otlphttp:
+    endpoint: ${DT_ENDPOINT}/api/v2/otlp
+    headers:
+      Authorization: "Api-Token ${DT_API_TOKEN}"
+
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    logs/k8sobject:
+      receivers: [k8sobjects]
+      processors: [memory_limiter, securityevent, batch]
+      exporters: [securityevent, debug]

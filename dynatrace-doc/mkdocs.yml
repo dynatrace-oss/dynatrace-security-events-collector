@@ -1,0 +1,71 @@
+site_name: Ingest Kyverno policy compliance findings and security events
+site_description: Ingest Kyverno OpenReports policy compliance findings into Dynatrace as security events
+site_author: Henrik Rexed
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: custom
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: custom
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.tabs.link
+    - toc.follow
+    - toc.integrate
+  custom_dir: .overrides
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Get started:
+    - Overview: get-started/overview.md
+    - Use cases: get-started/use-cases.md
+    - Requirements: get-started/requirements.md
+  - Activation and setup: activation-and-setup.md
+  - Details:
+    - How it works: details/how-it-works.md
+    - Collector configuration: details/collector-configuration.md
+    - Pipeline examples: details/pipeline-examples.md
+    - Build your own collector: details/build-your-own-collector.md
+  - Monitor data: monitor-data.md
+  - Visualize and analyze findings: visualize-and-analyze.md
+  - Automate and orchestrate findings: automate-and-orchestrate.md
+  - Query ingested data: query-ingested-data.md
+  - Delete connections: delete-connections.md
