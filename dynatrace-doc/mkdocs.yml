@@ -27,10 +27,6 @@ theme:
     - content.tabs.link
     - toc.follow
     - toc.integrate
-  custom_dir: .overrides
-
-extra_css:
-  - stylesheets/extra.css
 
 markdown_extensions:
   - admonition

@@ -348,7 +348,13 @@ func TestTransformToSecurityEvent_FieldMapping(t *testing.T) {
 		"scope.uid":       "pod-uid-123",
 	}
 
-	processor.transformToSecurityEvent(&logRecord, result, metadata, originalAttrs)
+	originalContent := `{"policy":"all-containers-need-requests-and-limits","rule":"check-container-resources","result":"fail"}`
+	originalSeverity := "medium"
+	k8sAttrs := map[string]interface{}{
+		"k8s.namespace.name": "test-namespace",
+	}
+
+	processor.transformToSecurityEvent(&logRecord, result, originalContent, originalSeverity, k8sAttrs, metadata, originalAttrs)
 
 	attrs := logRecord.Attributes()
 
@@ -356,7 +362,7 @@ func TestTransformToSecurityEvent_FieldMapping(t *testing.T) {
 	assert.NotEmpty(t, attrs.AsRaw()["event.id"])
 	assert.Equal(t, "1.309", attrs.AsRaw()["event.version"])
 	assert.Equal(t, "COMPLIANCE", attrs.AsRaw()["event.category"])
-	assert.Equal(t, "NON_COMPLIANT", attrs.AsRaw()["compliance.status"]) // fail -> NON_COMPLIANT
+	assert.Equal(t, "FAILED", attrs.AsRaw()["compliance.status"]) // fail -> FAILED
 	assert.Contains(t, attrs.AsRaw()["event.description"], "Policy violation")
 
 	// Verify finding fields
@@ -406,8 +412,13 @@ func TestFindingSeverity(t *testing.T) {
 			result := Result{Severity: tt.severity}
 			logRecord := plog.NewLogRecord()
 			metadata := map[string]interface{}{"scope.name": "test"}
+			originalContent := `{"severity":"` + tt.severity + `"}`
+			originalSeverity := tt.severity
+			k8sAttrs := map[string]interface{}{
+				"k8s.namespace.name": "test-namespace",
+			}
 
-			processor.transformToSecurityEvent(&logRecord, result, metadata, pcommon.NewMap())
+			processor.transformToSecurityEvent(&logRecord, result, originalContent, originalSeverity, k8sAttrs, metadata, pcommon.NewMap())
 			severity := logRecord.Attributes().AsRaw()["finding.severity"]
 			if tt.severity == "" {
 				// If severity is empty, the field should not be set
@@ -440,22 +451,22 @@ func TestCalculateRiskScoreFromSeverity(t *testing.T) {
 	}
 }
 
-func TestMapResultToComplianceStatus(t *testing.T) {
+func TestNormalizeComplianceStatus(t *testing.T) {
 	tests := []struct {
 		result   string
 		expected string
 	}{
-		{"pass", "COMPLIANT"},
-		{"fail", "NON_COMPLIANT"},
-		{"error", "NON_COMPLIANT"},
-		{"skip", "NON_COMPLIANT"},
-		{"unknown", "NON_COMPLIANT"},
-		{"", "NON_COMPLIANT"},
+		{"pass", "PASSED"},
+		{"fail", "FAILED"},
+		{"error", "NOT_RELEVANT"},
+		{"skip", "NOT_RELEVANT"},
+		{"unknown", "NOT_RELEVANT"},
+		{"", "NOT_RELEVANT"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.result, func(t *testing.T) {
-			status := mapResultToComplianceStatus(tt.result)
+			status := normalizeComplianceStatus(tt.result)
 			assert.Equal(t, tt.expected, status)
 		})
 	}
