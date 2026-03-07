@@ -68,9 +68,12 @@ exporters:
   - gomod: github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter v0.0.0
 
 replaces:
-  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor => ./src/SecurityLogEventProcessor
-  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter => ./src/SecurityEventExporter
+  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor => ../src/SecurityLogEventProcessor
+  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter => ../src/SecurityEventExporter
 ```
+
+!!! note
+    The `replaces` paths use `../src/` because OCB generates code in the `dist/` output directory. Paths in `replaces` are relative to that output directory, not the repository root.
 
 ### Manifest sections
 
@@ -88,8 +91,8 @@ The `replaces` section is critical for the monorepo setup. The custom plugins ar
 
 ```yaml
 replaces:
-  - github.com/dynatrace-oss/.../src/SecurityLogEventProcessor => ./src/SecurityLogEventProcessor
-  - github.com/dynatrace-oss/.../src/SecurityEventExporter => ./src/SecurityEventExporter
+  - github.com/dynatrace-oss/.../src/SecurityLogEventProcessor => ../src/SecurityLogEventProcessor
+  - github.com/dynatrace-oss/.../src/SecurityEventExporter => ../src/SecurityEventExporter
 ```
 
 OCB writes these as `replace` directives in the generated `go.mod`, so `go build` resolves the modules from the local filesystem.

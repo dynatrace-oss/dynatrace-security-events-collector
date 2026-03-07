@@ -1,6 +1,10 @@
 site_name: Ingest Kyverno policy compliance findings and security events
 site_description: Ingest Kyverno OpenReports policy compliance findings into Dynatrace as security events
 site_author: Henrik Rexed
+docs_dir: .
+exclude_docs: |
+  docs/
+  mkdocs.yml
 
 theme:
   name: material
@@ -64,4 +68,5 @@ nav:
   - Visualize and analyze findings: visualize-and-analyze.md
   - Automate and orchestrate findings: automate-and-orchestrate.md
   - Query ingested data: query-ingested-data.md
+  - Troubleshooting: troubleshooting.md
   - Delete connections: delete-connections.md
