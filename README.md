@@ -6,6 +6,7 @@
 [![License](https://img.shields.io/github/license/dynatrace-oss/dynatrace-security-events-collector?style=flat-square)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.24-blue?style=flat-square)](https://go.dev/)
 [![OTel Collector](https://img.shields.io/badge/otel--collector-v0.145.0-blueviolet?style=flat-square)](https://opentelemetry.io/docs/collector/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue?style=flat-square)](https://dynatrace-oss.github.io/dynatrace-security-events-collector/)
 
 An [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) distribution that transforms Kubernetes policy compliance data into [Dynatrace Security Events](https://docs.dynatrace.com/docs/shortlink/security-events-api). It bridges the gap between Kubernetes policy engines like [Kyverno](https://kyverno.io/) and Dynatrace's security posture management, giving you real-time compliance visibility without custom integration code.
 
@@ -103,7 +104,7 @@ spec:
             - containerPort: 8888  # Prometheus metrics
 ```
 
-See the [full documentation](dynatrace-doc/get-started/overview.md) for RBAC setup, configuration options, and collector pipeline details.
+See the [full documentation](https://dynatrace-oss.github.io/dynatrace-security-events-collector/) for RBAC setup, configuration options, and collector pipeline details.
 
 ## Building from Source
 
@@ -145,13 +146,15 @@ make lint && make vet && make vulncheck
 
 ## Documentation
 
-The full documentation covers configuration, RBAC, policy types, field mappings, deployment, and troubleshooting:
+**[View the full documentation →](https://dynatrace-oss.github.io/dynatrace-security-events-collector/)**
 
-- **[Getting Started](dynatrace-doc/get-started/overview.md)** — Prerequisites, API token setup, deployment
-- **[How It Works](dynatrace-doc/details/how-it-works.md)** — Architecture, field mapping, compliance status
-- **[Collector Configuration](dynatrace-doc/details/collector-configuration.md)** — Complete attribute reference, receiver, processor, exporter
-- **[Pipeline Examples](dynatrace-doc/details/pipeline-examples.md)** — Production, minimal, multi-pipeline, watch mode, dev
-- **[Build Your Own Collector](dynatrace-doc/details/build-your-own-collector.md)** — OCB manifest, custom builds, Docker
+The documentation covers configuration, RBAC, policy types, field mappings, deployment, and troubleshooting:
+
+- **[Getting Started](https://dynatrace-oss.github.io/dynatrace-security-events-collector/get-started/overview/)** — Prerequisites, API token setup, deployment
+- **[How It Works](https://dynatrace-oss.github.io/dynatrace-security-events-collector/details/how-it-works/)** — Architecture, field mapping, compliance status
+- **[Collector Configuration](https://dynatrace-oss.github.io/dynatrace-security-events-collector/details/collector-configuration/)** — Complete attribute reference, receiver, processor, exporter
+- **[Pipeline Examples](https://dynatrace-oss.github.io/dynatrace-security-events-collector/details/pipeline-examples/)** — Production, minimal, multi-pipeline, watch mode, dev
+- **[Build Your Own Collector](https://dynatrace-oss.github.io/dynatrace-security-events-collector/details/build-your-own-collector/)** — OCB manifest, custom builds, Docker
 
 ## Components
 

@@ -5,7 +5,7 @@ dist/
 .idea/
 .vscode/
 *.swp
-*.swo
+*.swodddededd
 
 # OS
 .DS_Store
