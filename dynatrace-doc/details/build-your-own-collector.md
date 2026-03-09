@@ -19,7 +19,7 @@ This means you can:
 
 ## Prerequisites
 
-- **Go 1.24+** installed
+- **Go 1.25+** installed
 - **OCB** installed (the build process installs it automatically via `make install-ocb`)
 
 To install OCB manually:

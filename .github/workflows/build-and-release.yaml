@@ -31,7 +31,7 @@ on:
 
 env:
   OCB_VERSION: "v0.145.0"
-  GO_VERSION: "1.24"
+  GO_VERSION: "1.25"
   PYTHON_VERSION: "3.12"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/dynatrace-security-events-collector
@@ -41,7 +41,8 @@ permissions:
   packages: write
   pages: write
   id-token: write
-  security-events: write        # For CodeQL / Trivy SARIF upload
+  actions: read                  # For CodeQL telemetry (workflow-runs API)
+  security-events: write         # For CodeQL / Trivy SARIF upload
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -134,7 +135,6 @@ jobs:
   govulncheck:
     name: Go vulnerability check
     runs-on: ubuntu-latest
-    continue-on-error: true  # stdlib vulns fixed in unreleased Go 1.25
     steps:
       - uses: actions/checkout@v4
 
@@ -335,10 +335,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set short SHA
+        id: vars
+        run: echo "short_sha=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Pull image
+        run: docker pull "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }}"
+
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
-          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+          image-ref: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }}"
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "CRITICAL,HIGH"
@@ -369,17 +376,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set short SHA
+        id: vars
+        run: echo "short_sha=sha-$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Pull image
+        run: docker pull "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }}"
+
       - name: Install syft
         uses: anchore/sbom-action/download-syft@v0
 
       - name: Generate SBOM (SPDX)
         run: |
-          syft ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+          syft ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }} \
             -o spdx-json=sbom-spdx.json
 
       - name: Generate SBOM (CycloneDX)
         run: |
-          syft ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+          syft ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.short_sha }} \
             -o cyclonedx-json=sbom-cyclonedx.json
 
       - name: Upload SBOM artifacts
