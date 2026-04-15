@@ -30,5 +30,5 @@ exporters:
   - gomod: github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter v0.0.0
 
 replaces:
-  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor => ./src/SecurityLogEventProcessor
-  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter => ./src/SecurityEventExporter
+  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor => ../src/SecurityLogEventProcessor
+  - github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter => ../src/SecurityEventExporter
