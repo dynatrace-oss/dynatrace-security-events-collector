@@ -9,13 +9,13 @@
 # ============================================================
 # Stage 1: Build the collector binary using OCB
 # ============================================================
-ARG GO_VERSION=1.24
+ARG GO_VERSION=1.25.9
 ARG ALPINE_VERSION=3.21
 
 FROM golang:${GO_VERSION}-alpine AS builder
 
 ARG TARGETARCH
-ARG OCB_VERSION=v0.145.0
+ARG OCB_VERSION=v0.150.0
 
 # Install build dependencies
 RUN apk add --no-cache git make
@@ -107,4 +107,4 @@ LABEL maintainer="Henrik Rexed"
 LABEL description="OpenTelemetry Collector with Security Event Processor and Exporter for Dynatrace"
 LABEL org.opencontainers.image.source="https://github.com/dynatrace-oss/dynatrace-security-events-collector"
 LABEL org.opencontainers.image.title="dynatrace-security-events-collector"
-LABEL collector.version="0.145.0"
+LABEL collector.version="0.150.0"

@@ -30,7 +30,7 @@ on:
   workflow_dispatch:
 
 env:
-  OCB_VERSION: "v0.145.0"
+  OCB_VERSION: "v0.150.0"
   GO_VERSION: "1.25.9"
   PYTHON_VERSION: "3.12"
   REGISTRY: ghcr.io
@@ -491,7 +491,7 @@ jobs:
 
             | Component | Version |
             |-----------|---------|
-            | OpenTelemetry Collector | v0.145.0 |
+            | OpenTelemetry Collector | v0.150.0 |
             | Security Event Processor | (monorepo) |
             | Security Event Exporter | (monorepo) |
 

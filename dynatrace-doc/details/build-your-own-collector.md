@@ -25,7 +25,7 @@ This means you can:
 To install OCB manually:
 
 ```bash
-go install go.opentelemetry.io/collector/cmd/builder@v0.145.0
+go install go.opentelemetry.io/collector/cmd/builder@v0.150.0
 mv $(go env GOPATH)/bin/builder $(go env GOPATH)/bin/ocb
 ```
 
@@ -40,30 +40,30 @@ dist:
   name: otelcol-securityevents
   description: OpenTelemetry Collector with Security Event plugins for Dynatrace
   output_path: ./dist
-  otelcol_version: v0.145.0
+  otelcol_version: v0.150.0
   module: github.com/dynatrace-oss/dynatrace-security-events-collector
 
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.145.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/prometheusreceiver v0.150.0
 
 processors:
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.145.0
-  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.145.0
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.150.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.150.0
   # Custom: Security Event Processor
   - gomod: github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityLogEventProcessor v0.0.0
 
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.145.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.145.0
-  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.145.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.150.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.150.0
+  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.150.0
   # Custom: Security Event Exporter
   - gomod: github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter v0.0.0
 
@@ -114,7 +114,7 @@ The binary is output to `dist/otelcol-securityevents`.
 
 ```bash
 # Install OCB
-go install go.opentelemetry.io/collector/cmd/builder@v0.145.0
+go install go.opentelemetry.io/collector/cmd/builder@v0.150.0
 mv $(go env GOPATH)/bin/builder $(go env GOPATH)/bin/ocb
 
 # Build
@@ -176,7 +176,7 @@ To add a component, add its `gomod` entry to the appropriate section. For exampl
 ```yaml
 receivers:
   # ... existing receivers ...
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/filelogreceiver v0.150.0
 ```
 
 All components must use the same OTel Collector version (the `otelcol_version` in the `dist` section). Mixing versions will cause dependency conflicts.
@@ -189,8 +189,8 @@ For example, if you don't need the Prometheus receiver:
 
 ```yaml
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.145.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.145.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.150.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.150.0
   # Removed: prometheusreceiver
 ```
 
@@ -224,7 +224,7 @@ replaces:
 
 ```yaml
 receivers:
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.145.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver v0.150.0
 ```
 
 **4. Build:**
@@ -319,7 +319,7 @@ cd ocb && ocb --config manifest.yaml
 
 **Version mismatch errors:**
 
-All OTel components must use the same version. If you see errors like `module requires go.opentelemetry.io/collector v0.145.0 but found v0.142.0`, check that every `gomod` entry in the manifest uses the same version.
+All OTel components must use the same version. If you see errors like `module requires go.opentelemetry.io/collector v0.150.0 but found v0.142.0`, check that every `gomod` entry in the manifest uses the same version.
 
 **"cannot find package" during Docker build:**
 
