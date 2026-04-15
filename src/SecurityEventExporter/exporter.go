@@ -436,7 +436,7 @@ func (e *securityEventExporter) sendSecurityEventBatch(ctx context.Context, secu
 		e.metrics.httpErrors++
 		return fmt.Errorf("failed to send HTTP request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	e.logger.Debug("Received HTTP response for batch",
 		zap.Int("status_code", resp.StatusCode),
@@ -472,107 +472,6 @@ func (e *securityEventExporter) sendSecurityEventBatch(ctx context.Context, secu
 		zap.Duration("request_duration", requestDuration),
 		zap.Int("json_size_bytes", jsonSize),
 		zap.Int("event_count", len(securityEvents)))
-
-	return nil
-}
-
-// sendSecurityEvent sends a single security event to the configured endpoint (deprecated - use batch method)
-func (e *securityEventExporter) sendSecurityEvent(ctx context.Context, securityEvent map[string]interface{}) error {
-	e.logger.Debug("Starting to send security event",
-		zap.String("endpoint", e.config.Endpoint),
-		zap.Int("event_field_count", len(securityEvent)))
-
-	// Marshal security event to JSON
-	jsonData, err := json.Marshal(securityEvent)
-	if err != nil {
-		e.logger.Error("Failed to marshal security event to JSON",
-			zap.Error(err),
-			zap.Int("event_field_count", len(securityEvent)))
-		return fmt.Errorf("failed to marshal security event: %w", err)
-	}
-
-	jsonSize := len(jsonData)
-	e.logger.Debug("Successfully marshaled security event to JSON",
-		zap.Int("json_size_bytes", jsonSize),
-		zap.String("json_preview", truncateString(string(jsonData), 200)))
-
-	// Create HTTP request
-	req, err := http.NewRequestWithContext(ctx, "POST", e.config.Endpoint, bytes.NewBuffer(jsonData))
-	if err != nil {
-		e.logger.Error("Failed to create HTTP request",
-			zap.Error(err),
-			zap.String("endpoint", e.config.Endpoint),
-			zap.String("method", "POST"))
-		return fmt.Errorf("failed to create HTTP request: %w", err)
-	}
-
-	e.logger.Debug("Created HTTP request",
-		zap.String("url", req.URL.String()),
-		zap.String("method", req.Method))
-
-	// Set headers
-	req.Header.Set("Content-Type", "application/json")
-	headerCount := 1 // Content-Type header
-	for key, value := range e.config.Headers {
-		req.Header.Set(key, string(value))
-		headerCount++
-		e.logger.Debug("Added custom header",
-			zap.String("header_name", key),
-			zap.Bool("is_sensitive", isSensitiveHeader(key)))
-	}
-
-	e.logger.Debug("Set HTTP headers",
-		zap.Int("total_headers", headerCount))
-
-	// Send request
-	e.logger.Debug("Sending HTTP request",
-		zap.String("endpoint", e.config.Endpoint),
-		zap.Duration("timeout", e.config.Timeout))
-
-	startTime := time.Now()
-	resp, err := e.client.Do(req)
-	requestDuration := time.Since(startTime)
-
-	if err != nil {
-		e.logger.Error("Failed to send HTTP request",
-			zap.Error(err),
-			zap.String("endpoint", e.config.Endpoint),
-			zap.Duration("request_duration", requestDuration),
-			zap.Duration("timeout", e.config.Timeout))
-		return fmt.Errorf("failed to send HTTP request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	e.logger.Debug("Received HTTP response",
-		zap.Int("status_code", resp.StatusCode),
-		zap.String("status", resp.Status),
-		zap.Duration("request_duration", requestDuration),
-		zap.Int64("content_length", resp.ContentLength))
-
-	// Check response status
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		e.logger.Error("HTTP request failed with non-success status",
-			zap.Int("status_code", resp.StatusCode),
-			zap.String("status", resp.Status),
-			zap.String("endpoint", e.config.Endpoint),
-			zap.Duration("request_duration", requestDuration))
-
-		// Try to read response body for additional error details
-		if resp.Body != nil {
-			body, readErr := io.ReadAll(resp.Body)
-			if readErr == nil && len(body) > 0 {
-				e.logger.Error("HTTP error response body",
-					zap.String("response_body", truncateString(string(body), 500)))
-			}
-		}
-
-		return fmt.Errorf("HTTP request failed with status: %d", resp.StatusCode)
-	}
-
-	e.logger.Debug("Successfully sent security event",
-		zap.Int("status_code", resp.StatusCode),
-		zap.Duration("request_duration", requestDuration),
-		zap.Int("json_size_bytes", jsonSize))
 
 	return nil
 }
