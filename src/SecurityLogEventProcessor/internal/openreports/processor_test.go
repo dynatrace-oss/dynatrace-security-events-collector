@@ -108,7 +108,7 @@ func TestProcessLogRecord_OpenReportsLog_SingleResult(t *testing.T) {
 	eventAttrs := records[0].Attributes()
 	assert.Equal(t, "COMPLIANCE_FINDING", eventAttrs.AsRaw()["event.type"])
 	assert.Equal(t, "COMPLIANCE", eventAttrs.AsRaw()["event.category"])
-	assert.Equal(t, "COMPLIANT", eventAttrs.AsRaw()["compliance.status"])
+	assert.Equal(t, "PASSED", eventAttrs.AsRaw()["compliance.status"])
 	assert.Equal(t, "test-policy", eventAttrs.AsRaw()["compliance.requirements"])
 	assert.Equal(t, "test-rule", eventAttrs.AsRaw()["compliance.control"])
 }
@@ -179,9 +179,9 @@ func TestProcessLogRecord_OpenReportsLog_MultipleResults(t *testing.T) {
 	event2Attrs := records[1].Attributes()
 	event3Attrs := records[2].Attributes()
 
-	assert.Equal(t, "COMPLIANT", event1Attrs.AsRaw()["compliance.status"])
-	assert.Equal(t, "NON_COMPLIANT", event2Attrs.AsRaw()["compliance.status"])
-	assert.Equal(t, "NON_COMPLIANT", event3Attrs.AsRaw()["compliance.status"])
+	assert.Equal(t, "PASSED", event1Attrs.AsRaw()["compliance.status"])
+	assert.Equal(t, "FAILED", event2Attrs.AsRaw()["compliance.status"])
+	assert.Equal(t, "NOT_RELEVANT", event3Attrs.AsRaw()["compliance.status"])
 }
 
 func TestProcessLogRecord_StatusFilter_OnlyFailures(t *testing.T) {
@@ -247,7 +247,7 @@ func TestProcessLogRecord_StatusFilter_OnlyFailures(t *testing.T) {
 	assert.Len(t, records, 1, "Should only create security event for fail status")
 
 	eventAttrs := records[0].Attributes()
-	assert.Equal(t, "NON_COMPLIANT", eventAttrs.AsRaw()["compliance.status"])
+	assert.Equal(t, "FAILED", eventAttrs.AsRaw()["compliance.status"])
 	assert.Equal(t, "policy2", eventAttrs.AsRaw()["compliance.requirements"])
 }
 
@@ -348,7 +348,12 @@ func TestTransformToSecurityEvent_FieldMapping(t *testing.T) {
 		"scope.uid":       "pod-uid-123",
 	}
 
-	processor.transformToSecurityEvent(&logRecord, result, metadata, originalAttrs)
+	k8sAttrs := map[string]interface{}{
+		"k8s.cluster.name":   "test-cluster",
+		"k8s.namespace.name": "test-namespace",
+	}
+
+	processor.transformToSecurityEvent(&logRecord, result, "{}", "medium", k8sAttrs, metadata, originalAttrs)
 
 	attrs := logRecord.Attributes()
 
@@ -356,19 +361,18 @@ func TestTransformToSecurityEvent_FieldMapping(t *testing.T) {
 	assert.NotEmpty(t, attrs.AsRaw()["event.id"])
 	assert.Equal(t, "1.309", attrs.AsRaw()["event.version"])
 	assert.Equal(t, "COMPLIANCE", attrs.AsRaw()["event.category"])
-	assert.Equal(t, "NON_COMPLIANT", attrs.AsRaw()["compliance.status"]) // fail -> NON_COMPLIANT
+	assert.Equal(t, "FAILED", attrs.AsRaw()["compliance.status"]) // fail -> FAILED
 	assert.Contains(t, attrs.AsRaw()["event.description"], "Policy violation")
 
-	// Verify finding fields
-	assert.Equal(t, result.Message, attrs.AsRaw()["finding.description"])
+	// Verify finding fields (finding.description removed per requirements)
 	assert.NotEmpty(t, attrs.AsRaw()["finding.id"])
-	assert.Equal(t, "MEDIUM", attrs.AsRaw()["finding.severity"])
+	assert.Equal(t, "medium", attrs.AsRaw()["finding.severity"])
 	assert.Equal(t, "all-containers-need-requests-and-limits - check-container-resources", attrs.AsRaw()["finding.title"])
 
 	// Verify compliance fields
 	assert.Equal(t, "check-container-resources", attrs.AsRaw()["compliance.control"])
 	assert.Equal(t, "all-containers-need-requests-and-limits", attrs.AsRaw()["compliance.requirements"])
-	assert.Equal(t, "NON_COMPLIANT", attrs.AsRaw()["compliance.status"])
+	assert.Equal(t, "FAILED", attrs.AsRaw()["compliance.status"])
 	assert.Equal(t, "Pod Security Standards (Baseline)", attrs.AsRaw()["compliance.standards"])
 
 	// Verify risk fields
@@ -390,31 +394,25 @@ func TestFindingSeverity(t *testing.T) {
 		severity string
 		expected string
 	}{
-		{"critical", "critical", "CRITICAL"},
-		{"high", "high", "HIGH"},
-		{"medium", "medium", "MEDIUM"},
-		{"low", "low", "LOW"},
-		{"empty", "", ""},
-		{"unknown", "unknown", "MEDIUM"},                  // Unknown severity defaults to MEDIUM
-		{"case sensitive critical", "Critical", "MEDIUM"}, // Case sensitive, so "Critical" != "critical"
+		{"critical", "critical", "critical"},
+		{"high", "high", "high"},
+		{"medium", "medium", "medium"},
+		{"low", "low", "low"},
+		{"empty", "", "MEDIUM"},
+		{"unknown", "unknown", "unknown"},
+		{"case sensitive critical", "Critical", "Critical"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			processor, _ := NewProcessor(zaptest.NewLogger(t), &Config{Enabled: true})
-			// Test that finding.severity is mapped to uppercase format
 			result := Result{Severity: tt.severity}
 			logRecord := plog.NewLogRecord()
 			metadata := map[string]interface{}{"scope.name": "test"}
 
-			processor.transformToSecurityEvent(&logRecord, result, metadata, pcommon.NewMap())
+			processor.transformToSecurityEvent(&logRecord, result, "{}", "", nil, metadata, pcommon.NewMap())
 			severity := logRecord.Attributes().AsRaw()["finding.severity"]
-			if tt.severity == "" {
-				// If severity is empty, the field should not be set
-				assert.Nil(t, severity)
-			} else {
-				assert.Equal(t, tt.expected, severity)
-			}
+			assert.Equal(t, tt.expected, severity)
 		})
 	}
 }
@@ -445,17 +443,17 @@ func TestMapResultToComplianceStatus(t *testing.T) {
 		result   string
 		expected string
 	}{
-		{"pass", "COMPLIANT"},
-		{"fail", "NON_COMPLIANT"},
-		{"error", "NON_COMPLIANT"},
-		{"skip", "NON_COMPLIANT"},
-		{"unknown", "NON_COMPLIANT"},
-		{"", "NON_COMPLIANT"},
+		{"pass", "PASSED"},
+		{"fail", "FAILED"},
+		{"error", "NOT_RELEVANT"},
+		{"skip", "NOT_RELEVANT"},
+		{"unknown", "NOT_RELEVANT"},
+		{"", "NOT_RELEVANT"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.result, func(t *testing.T) {
-			status := mapResultToComplianceStatus(tt.result)
+			status := normalizeComplianceStatus(tt.result)
 			assert.Equal(t, tt.expected, status)
 		})
 	}
@@ -617,7 +615,7 @@ func TestProcessLogRecord_WithSeverityAndCategory(t *testing.T) {
 
 	eventAttrs := records[0].Attributes()
 	assert.Equal(t, 8.9, eventAttrs.AsRaw()["dt.security.risk.score"])
-	assert.Equal(t, "HIGH", eventAttrs.AsRaw()["finding.severity"])
+	assert.Equal(t, "high", eventAttrs.AsRaw()["finding.severity"])
 	assert.Equal(t, "Pod Security Standards (Baseline)", eventAttrs.AsRaw()["compliance.standards"])
 }
 

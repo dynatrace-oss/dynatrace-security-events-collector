@@ -1,8 +1,6 @@
 module github.com/dynatrace-oss/dynatrace-security-events-collector/src/SecurityEventExporter
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.25.9
 
 require (
 	go.opentelemetry.io/collector/component v1.47.0

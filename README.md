@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/dynatrace-oss/dynatrace-security-events-collector?style=flat-square)](https://goreportcard.com/report/github.com/dynatrace-oss/dynatrace-security-events-collector)
 [![License](https://img.shields.io/github/license/dynatrace-oss/dynatrace-security-events-collector?style=flat-square)](LICENSE)
 [![Go Version](https://img.shields.io/badge/go-1.24-blue?style=flat-square)](https://go.dev/)
-[![OTel Collector](https://img.shields.io/badge/otel--collector-v0.145.0-blueviolet?style=flat-square)](https://opentelemetry.io/docs/collector/)
+[![OTel Collector](https://img.shields.io/badge/otel--collector-v0.150.0-blueviolet?style=flat-square)](https://opentelemetry.io/docs/collector/)
 
 An [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) distribution that transforms Kubernetes policy compliance data into [Dynatrace Security Events](https://docs.dynatrace.com/docs/shortlink/security-events-api). It bridges the gap between Kubernetes policy engines like [Kyverno](https://kyverno.io/) and Dynatrace's security posture management, giving you real-time compliance visibility without custom integration code.
 
@@ -162,7 +162,7 @@ The full documentation covers configuration, RBAC, policy types, field mappings,
 | `k8sobjects` receiver | Receiver | Beta | Watches Kubernetes CRDs (upstream contrib) |
 | `otlp` receiver | Receiver | Stable | Standard OTLP ingestion (upstream core) |
 
-Built on OpenTelemetry Collector **v0.145.0** using [OCB](https://opentelemetry.io/docs/collector/custom-collector/) (OpenTelemetry Collector Builder).
+Built on OpenTelemetry Collector **v0.150.0** using [OCB](https://opentelemetry.io/docs/collector/custom-collector/) (OpenTelemetry Collector Builder).
 
 ## Contributing
 

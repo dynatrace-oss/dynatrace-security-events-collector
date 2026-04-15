@@ -1,7 +1,7 @@
 # Makefile for building the Dynatrace Security Events Collector
 # Requires: Go 1.24+, Docker (for image builds)
 
-OCB_VERSION   ?= v0.145.0
+OCB_VERSION   ?= v0.150.0
 IMAGE_NAME    ?= dynatrace-oss/dynatrace-security-events-collector
 IMAGE_TAG     ?= latest
 GOOS          ?= $(shell go env GOOS)

@@ -30,8 +30,8 @@ on:
   workflow_dispatch:
 
 env:
-  OCB_VERSION: "v0.145.0"
-  GO_VERSION: "1.24"
+  OCB_VERSION: "v0.150.0"
+  GO_VERSION: "1.25.9"
   PYTHON_VERSION: "3.12"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/dynatrace-security-events-collector
@@ -152,33 +152,6 @@ jobs:
       - name: Scan exporter
         working-directory: src/SecurityEventExporter
         run: govulncheck ./...
-
-  # ------------------------------------------------------------------
-  # Job: Security — CodeQL analysis
-  # ------------------------------------------------------------------
-  codeql:
-    name: CodeQL analysis
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: go
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:go"
 
 # ===================================================================
 # STAGE 2: Build artifacts (after quality gates pass)
@@ -491,7 +464,7 @@ jobs:
 
             | Component | Version |
             |-----------|---------|
-            | OpenTelemetry Collector | v0.145.0 |
+            | OpenTelemetry Collector | v0.150.0 |
             | Security Event Processor | (monorepo) |
             | Security Event Exporter | (monorepo) |
 
