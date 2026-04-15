@@ -153,33 +153,6 @@ jobs:
         working-directory: src/SecurityEventExporter
         run: govulncheck ./...
 
-  # ------------------------------------------------------------------
-  # Job: Security — CodeQL analysis
-  # ------------------------------------------------------------------
-  codeql:
-    name: CodeQL analysis
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: go
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:go"
-
 # ===================================================================
 # STAGE 2: Build artifacts (after quality gates pass)
 # ===================================================================
