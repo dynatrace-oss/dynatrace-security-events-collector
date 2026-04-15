@@ -1,0 +1,808 @@
+{
+  "id": "5fa58934-3d0d-45ef-b0e4-61e542e259ee",
+  "name": "Kyverno - Security \u0026 Health",
+  "type": "dashboard",
+  "owner": "97e8c860-1b2b-4995-b55a-d72382d35243",
+  "isPrivate": true,
+  "version": 38,
+  "modificationInfo": {
+    "createdBy": "",
+    "createdTime": "2026-04-15T08:38:49.615Z",
+    "lastModifiedBy": "",
+    "lastModifiedTime": "2026-04-15T08:56:01.972Z"
+  },
+  "content": {
+    "version": 21,
+    "variables": [],
+    "tiles": {
+      "0": {
+        "type": "markdown",
+        "content": "# 🔒 Security Overview"
+      },
+      "1": {
+        "title": "Validation Policies Status",
+        "type": "data",
+        "query": "timeseries { sum(kyverno_policy_rule_info_total), value.A = avg(kyverno_policy_rule_info_total, scalar: true) }, by: { policy_name, status_ready }\n| fields policy_name, status_ready",
+        "visualization": "table",
+        "visualizationSettings": {
+          "autoSelectVisualization": false,
+          "coloring": {
+            "colorRules": [
+              {
+                "colorMode": "custom-color",
+                "comparator": "=",
+                "customColor": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "field": "status_ready",
+                "metadata": {
+                  "applyTo": "cell",
+                  "fields": [
+                    "status_ready"
+                  ]
+                },
+                "value": "true"
+              },
+              {
+                "colorMode": "custom-color",
+                "comparator": "=",
+                "customColor": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "field": "status_ready",
+                "metadata": {
+                  "applyTo": "cell",
+                  "fields": [
+                    "status_ready"
+                  ]
+                },
+                "value": "false"
+              }
+            ]
+          },
+          "table": {
+            "rowDensity": "comfortable"
+          }
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "2": {
+        "title": "Policy Failure per Namespace",
+        "type": "data",
+        "query": "fetch security.events\n| filter event.type == \"COMPLIANCE_FINDING\" and event.provider==\"kyverno\"\n| fields timestamp,finding.severity,finding.title, finding.status, k8s.cluster.name, k8s.namespace.name, k8s.workload.name\n| filter finding.status !=\"pass\"\n| summarize count() , by:{k8s.namespace.name}",
+        "visualization": "pieChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": false,
+          "chartSettings": {
+            "legend": {
+              "position": "right"
+            }
+          }
+        },
+        "querySettings": {
+          "maxResultRecords": 1000,
+          "defaultScanLimitGbytes": 500,
+          "maxResultMegaBytes": 1,
+          "defaultSamplingRatio": 10,
+          "enableSampling": false
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "3": {
+        "title": "Failed Policy Results by Namespace",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { count(kyverno_policy_results), value.A = avg(kyverno_policy_results, scalar: true) }, by: { resource_namespace }, filter: { matchesValue(rule_result, \"fail\") }",
+        "visualization": "honeycomb",
+        "visualizationSettings": {
+          "coloring": {
+            "colorRules": [
+              {
+                "colorMode": "color-palette",
+                "colorPalette": "red-inverted",
+                "comparator": "= *value*",
+                "field": "",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          },
+          "honeycomb": {
+            "labels": {
+              "showLabels": true
+            },
+            "shape": "circle"
+          }
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_policy_results",
+                "aggregation": "count"
+              },
+              "by": [
+                "resource_namespace"
+              ],
+              "convertToValue": "Avg",
+              "filter": "rule_result = fail "
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "4": {
+        "title": "Policy Results Over Time",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { sum(kyverno_policy_results), value.A = avg(kyverno_policy_results, scalar: true) }, by: { policy_name, rule_result }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_policy_results",
+                "aggregation": "sum"
+              },
+              "by": [
+                "policy_name",
+                "rule_result"
+              ],
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "5": {
+        "type": "markdown",
+        "content": "# 🛡️ Security Events"
+      },
+      "6": {
+        "title": "Compliance Findings",
+        "type": "data",
+        "query": "fetch security.events\n| filter event.type == \"COMPLIANCE_FINDING\" and event.provider==\"kyverno\"\n| fields timestamp,finding.severity,finding.title, finding.status, k8s.cluster.name, k8s.namespace.name, k8s.workload.name\n| sort timestamp desc",
+        "visualization": "table",
+        "visualizationSettings": {
+          "autoSelectVisualization": true,
+          "table": {
+            "hideColumnsForLargeResults": true,
+            "linewrapEnabled": true,
+            "rowDensity": "comfortable"
+          }
+        },
+        "querySettings": {
+          "maxResultRecords": 1000,
+          "defaultScanLimitGbytes": 500,
+          "maxResultMegaBytes": 1,
+          "defaultSamplingRatio": 10,
+          "enableSampling": false
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "7": {
+        "type": "markdown",
+        "content": "# ⚙️ Security Event Processor"
+      },
+      "8": {
+        "title": "Incoming Reports (processor_securityevent_incoming_logs_total)",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { sum(processor_securityevent_incoming_logs_total), value.A = avg(processor_securityevent_incoming_logs_total, scalar: true) }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "processor_securityevent_incoming_logs_total",
+                "aggregation": "sum"
+              },
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "9": {
+        "title": "Emitted Events (processor_securityevent_outgoing_logs_total)",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { sum(processor_securityevent_outgoing_logs_total), value.A = avg(processor_securityevent_outgoing_logs_total, scalar: true) }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "processor_securityevent_outgoing_logs_total",
+                "aggregation": "sum"
+              },
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "12": {
+        "type": "markdown",
+        "content": "# 🚦 Admission Controller"
+      },
+      "13": {
+        "title": "Policy Execution Duration",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { avg(kyverno_policy_execution_duration_seconds), value.A = avg(kyverno_policy_execution_duration_seconds, scalar: true) }, by: { policy_name }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "maxResultRecords": 1000,
+          "defaultScanLimitGbytes": 500,
+          "maxResultMegaBytes": 1,
+          "defaultSamplingRatio": 10,
+          "enableSampling": false
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_policy_execution_duration_seconds",
+                "aggregation": "avg"
+              },
+              "by": [
+                "policy_name"
+              ],
+              "convertToValue": "Avg"
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "14": {
+        "title": "Admission Review Duration",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { avg(kyverno_admission_review_duration_seconds), value.A = avg(kyverno_admission_review_duration_seconds, scalar: true) }, by: { resource_namespace }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "maxResultRecords": 1000,
+          "defaultScanLimitGbytes": 500,
+          "maxResultMegaBytes": 1,
+          "defaultSamplingRatio": 10,
+          "enableSampling": false
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_admission_review_duration_seconds",
+                "aggregation": "avg"
+              },
+              "by": [
+                "resource_namespace"
+              ],
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "15": {
+        "type": "markdown",
+        "content": "# 📝 Kyverno Logs"
+      },
+      "16": {
+        "title": "Kyverno Error Logs",
+        "type": "data",
+        "query": "fetch logs\n| filter k8s.namespace.name == \"kyverno\"\n| parse log, \"JSON:logjson\"\n| fieldsAdd kyverno_level=logjson[level], kyverno_kind=logjson[gvk], kyverno_resource=logjson[gvr], kyverno_resource_name=logjson[name],kyverno_resource_namespace=logjson[namespace],kyverno_resource_operation=logjson[operation],kyverno_error=logjson[error], kyverno_message=logjson[message], kyverno_looger=logjson[logger]\n| filter kyverno_level ==\"error\"\n| fields timestamp, k8s.deployment.name, kyverno_looger, kyverno_message, kyverno_kind, kyverno_resource, kyverno_resource_name , kyverno_resource_namespace , kyverno_resource_operation, kyverno_error",
+        "visualization": "table",
+        "visualizationSettings": {
+          "autoSelectVisualization": true,
+          "table": {
+            "columnTypeOverrides": [
+              {
+                "fields": [
+                  "timestamp"
+                ],
+                "id": 1182660,
+                "value": "datetime"
+              },
+              {
+                "fields": [],
+                "id": 1188871,
+                "value": "text"
+              }
+            ],
+            "hideColumnsForLargeResults": true,
+            "rowDensity": "comfortable"
+          }
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "17": {
+        "type": "markdown",
+        "content": "# 🔄 Controllers"
+      },
+      "18": {
+        "title": "Controller Queue",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { sum(kyverno_controller_requeue), value.A = avg(kyverno_controller_requeue, scalar: true) }",
+        "visualization": "table",
+        "visualizationSettings": {
+          "autoSelectVisualization": true,
+          "table": {
+            "hideColumnsForLargeResults": true
+          }
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_controller_requeue",
+                "aggregation": "sum"
+              },
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "19": {
+        "title": "Controller Reconcile",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { sum(kyverno_controller_reconcile), value.A = avg(kyverno_controller_reconcile, scalar: true) }, by: { controller_name }",
+        "visualization": "table",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_controller_reconcile",
+                "aggregation": "sum"
+              },
+              "by": [
+                "controller_name"
+              ],
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "20": {
+        "title": "Events Dropped",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { sum(kyverno_events_dropped), value.A = avg(kyverno_events_dropped, scalar: true) }",
+        "visualization": "table",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "kyverno_events_dropped",
+                "aggregation": "sum"
+              },
+              "convertToValue": "Avg",
+              "filter": ""
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "21": {
+        "type": "markdown",
+        "content": "# 📊 Resource Usage"
+      },
+      "22": {
+        "title": "Kyverno CPU Usage",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { avg(dt.kubernetes.container.cpu_usage), value.A = avg(dt.kubernetes.container.cpu_usage, scalar: true) }, by: { k8s.deployment.name }, filter: { matchesValue(k8s.namespace.name, \"kyverno\") }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "dt.kubernetes.container.cpu_usage",
+                "aggregation": "avg"
+              },
+              "by": [
+                "k8s.deployment.name"
+              ],
+              "convertToValue": "Avg",
+              "filter": "k8s.namespace.name = kyverno "
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      },
+      "23": {
+        "title": "Kyverno Memory Usage",
+        "type": "data",
+        "subType": "dql-builder-metrics",
+        "query": "timeseries { avg(dt.kubernetes.container.memory_working_set), value.A = avg(dt.kubernetes.container.memory_working_set, scalar: true) }, by: { k8s.deployment.name }, filter: { matchesValue(k8s.namespace.name, \"kyverno\") }",
+        "visualization": "lineChart",
+        "visualizationSettings": {
+          "autoSelectVisualization": true
+        },
+        "querySettings": {
+          "defaultSamplingRatio": 10,
+          "defaultScanLimitGbytes": 500,
+          "enableSampling": false,
+          "maxResultMegaBytes": 1,
+          "maxResultRecords": 1000
+        },
+        "queryConfig": {
+          "version": 20,
+          "subQueries": [
+            {
+              "id": "A",
+              "isEnabled": true,
+              "datatype": "metrics",
+              "metric": {
+                "key": "dt.kubernetes.container.memory_working_set",
+                "aggregation": "avg"
+              },
+              "by": [
+                "k8s.deployment.name"
+              ],
+              "convertToValue": "Avg",
+              "filter": "k8s.namespace.name = kyverno "
+            }
+          ]
+        },
+        "davis": {
+          "enabled": false,
+          "davisVisualization": {
+            "isAvailable": true
+          }
+        }
+      }
+    },
+    "layouts": {
+      "0": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      },
+      "1": {
+        "x": 0,
+        "y": 1,
+        "w": 9,
+        "h": 13
+      },
+      "2": {
+        "x": 9,
+        "y": 1,
+        "w": 15,
+        "h": 8
+      },
+      "3": {
+        "x": 9,
+        "y": 9,
+        "w": 15,
+        "h": 5
+      },
+      "4": {
+        "x": 0,
+        "y": 14,
+        "w": 24,
+        "h": 8
+      },
+      "5": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 1
+      },
+      "6": {
+        "x": 0,
+        "y": 23,
+        "w": 24,
+        "h": 10
+      },
+      "7": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 1
+      },
+      "8": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 6
+      },
+      "9": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 6
+      },
+      "12": {
+        "x": 0,
+        "y": 40,
+        "w": 24,
+        "h": 1
+      },
+      "13": {
+        "x": 0,
+        "y": 41,
+        "w": 12,
+        "h": 6
+      },
+      "14": {
+        "x": 12,
+        "y": 41,
+        "w": 12,
+        "h": 6
+      },
+      "15": {
+        "x": 0,
+        "y": 47,
+        "w": 24,
+        "h": 1
+      },
+      "16": {
+        "x": 0,
+        "y": 48,
+        "w": 24,
+        "h": 8
+      },
+      "17": {
+        "x": 0,
+        "y": 56,
+        "w": 24,
+        "h": 1
+      },
+      "18": {
+        "x": 0,
+        "y": 57,
+        "w": 8,
+        "h": 6
+      },
+      "19": {
+        "x": 8,
+        "y": 57,
+        "w": 8,
+        "h": 6
+      },
+      "20": {
+        "x": 16,
+        "y": 57,
+        "w": 8,
+        "h": 6
+      },
+      "21": {
+        "x": 0,
+        "y": 63,
+        "w": 24,
+        "h": 1
+      },
+      "22": {
+        "x": 0,
+        "y": 64,
+        "w": 12,
+        "h": 8
+      },
+      "23": {
+        "x": 12,
+        "y": 64,
+        "w": 12,
+        "h": 8
+      }
+    },
+    "importedWithCode": false,
+    "settings": {},
+    "annotations": []
+  }
+}

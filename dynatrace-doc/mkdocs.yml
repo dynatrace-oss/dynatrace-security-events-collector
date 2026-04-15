@@ -58,14 +58,13 @@ nav:
     - Overview: get-started/overview.md
     - Use cases: get-started/use-cases.md
     - Requirements: get-started/requirements.md
-  - Activation and setup: activation-and-setup.md
   - Details:
     - How it works: details/how-it-works.md
     - Collector configuration: details/collector-configuration.md
     - Pipeline examples: details/pipeline-examples.md
     - Build your own collector: details/build-your-own-collector.md
-  - Monitor data: monitor-data.md
-  - Visualize and analyze findings: visualize-and-analyze.md
-  - Automate and orchestrate findings: automate-and-orchestrate.md
-  - Query ingested data: query-ingested-data.md
-  - Delete connections: delete-connections.md
+  - Using Security Events:
+    - Query ingested data: query-ingested-data.md
+    - Visualize and analyze findings: visualize-and-analyze.md
+    - Monitor data: monitor-data.md
+  - Troubleshooting: troubleshooting.md
