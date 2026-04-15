@@ -37,7 +37,7 @@ With the ingested data, you can accomplish various use cases, such as:
 
 ### Requirements
 
-- **Kyverno** installed in your Kubernetes cluster with OpenReports enabled. See [Configuring Kyverno](activation-and-setup.md#step-2-install-kyverno-with-openreports).
+- **Kyverno** installed in your Kubernetes cluster with OpenReports enabled. See [Requirements](get-started/requirements.md).
 - **OpenTelemetry Operator** installed in your cluster. See [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator).
 - **kubectl** configured with cluster access.
 - **Helm 3** installed.
@@ -48,4 +48,4 @@ With the ingested data, you can accomplish various use cases, such as:
     - Generate an access token with the **`securityEvents.ingest`** scope and save it for later. For details, see [Dynatrace API — Tokens and authentication](https://docs.dynatrace.com).
     - If you also send metrics, logs, or traces, add the `metrics.ingest`, `logs.ingest`, and `openTelemetryTrace.ingest` scopes respectively.
 
-[Get started with setup :material-arrow-right:](activation-and-setup.md){ .md-button .md-button--primary }
+[Get started with setup :material-arrow-right:](get-started/overview.md){ .md-button .md-button--primary }

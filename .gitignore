@@ -21,3 +21,4 @@ mkdocs-site/site/
 
 # Coverage
 coverage*.out
+dynatrace-doc/site/
