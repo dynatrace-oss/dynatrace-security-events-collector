@@ -1101,11 +1101,12 @@ func copyK8sFields(targetAttrs pcommon.Map, originalAttrs pcommon.Map, metadata 
 	// Add workload fields from workload.* metadata (if available)
 	if workloadName, ok := metadata["workload.name"]; ok && workloadName != "" {
 		workloadKind := getString(metadata, "workload.kind")
-		if workloadKind == k8sKindDeployment {
+		switch workloadKind {
+		case k8sKindDeployment:
 			targetAttrs.PutStr("k8s.deployment.name", fmt.Sprintf("%v", workloadName))
-		} else if workloadKind == "StatefulSet" {
+		case "StatefulSet":
 			targetAttrs.PutStr("k8s.statefulset.name", fmt.Sprintf("%v", workloadName))
-		} else if workloadKind == "DaemonSet" {
+		case "DaemonSet":
 			targetAttrs.PutStr("k8s.daemonset.name", fmt.Sprintf("%v", workloadName))
 		}
 		targetAttrs.PutStr("k8s.workload.name", fmt.Sprintf("%v", workloadName))
