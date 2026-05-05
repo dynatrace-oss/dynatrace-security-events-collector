@@ -1,0 +1,150 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dt-security-collector-config
+  namespace: dynatrace
+data:
+  collector.yaml: |
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: opentelemetry-collector
+              scrape_interval: 5s
+              static_configs:
+                - targets:
+                    - ${MY_POD_IP}:8888
+      otlp:
+        protocols:
+          grpc:
+            endpoint: ${MY_POD_IP}:4317
+          http:
+            cors:
+              allowed_origins:
+                - http://*
+                - https://*
+            endpoint: ${MY_POD_IP}:4318
+
+      k8sobjects:
+        auth_type: serviceAccount
+        objects:
+          - name: clusterreports
+            group: openreports.io
+            mode: pull
+            interval: 10m
+          - name: reports
+            group: openreports.io
+            mode: pull
+            interval: 10m
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 70
+        spike_limit_percentage: 30
+      resource:
+        attributes:
+          - key: k8s.cluster.name
+            value: ${CLUSTERNAME}
+            action: insert
+      securityevent:
+        processors:
+          openreports:
+            enabled: true
+    
+      k8sattributes/security:
+        extract:
+          metadata:
+            - k8s.cluster.uid
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.namespace.name
+      k8sattributes:
+        extract:
+          metadata:
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.deployment.name
+            - k8s.statefulset.name
+            - k8s.daemonset.name
+            - k8s.cronjob.name
+            - k8s.namespace.name
+            - k8s.container.name
+            - k8s.node.name
+            - k8s.cluster.uid
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.name
+              - from: resource_attribute
+                name: k8s.namespace.name
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+    
+      cumulativetodelta: {}
+    
+      batch:
+        send_batch_max_size: 1000
+        timeout: 30s
+        send_batch_size: 800
+    
+    resource:
+        attributes:
+          - key: k8s.cluster.name
+            value: ${CLUSTERNAME}
+            action: insert
+    
+    exporters:
+      securityevent:
+        endpoint: "${DT_ENDPOINT}/platform/ingest/v1/security.events"
+        timeout: 30s
+        headers:
+          Authorization: "Api-Token ${DT_API_TOKEN}"
+          Content-Type: "application/json"
+      debug:
+        verbosity: detailed
+
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter,k8sattributes,batch]
+          exporters: [otlphttp]
+        metrics:
+          receivers: [otlp,prometheus]
+          processors: [memory_limiter,k8sattributes,cumulativetodelta,batch]
+          exporters: [otlphttp]
+        logs/k8sobject:
+          receivers: [k8sobjects]
+          processors:
+            - memory_limiter
+            - resource
+            - securityevent
+            - k8sattributes/security
+            - batch
+          exporters: [securityevent]
+      telemetry:
+        logs:
+          level: info  # debug, info, warn, error
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: ${MY_POD_IP}
+                    port: 8888
+                    without_units: true
+        traces:
+          processors:
+            - batch:
+                exporter:
+                  otlp:
+                    protocol: grpc
+                    endpoint: http://${MY_POD_IP}:4317

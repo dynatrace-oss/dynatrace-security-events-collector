@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dt-security-events-collector
+  namespace: dynatrace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dt-security-events-collector
+  template:
+    metadata:
+      labels:
+        app: dt-security-events-collector
+    spec:
+      serviceAccountName: security-events-collector
+      containers:
+        - name: collector
+          image: ghcr.io/dynatrace-oss/dynatrace-security-events-collector:latest
+          args: ["--config=/etc/otel/collector.yaml"]
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: DT_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: dynatrace-secrets
+                  key: endpoint
+            - name: DT_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dynatrace-secrets
+                  key: api-token
+            - name: CLUSTERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dynatrace-secrets
+                  key: cluster-name
+                  optional: true
+          ports:
+            - containerPort: 8888
+              name: metrics
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otel
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: dt-security-collector-config
+            items:
+              - key: collector.yaml
+                path: collector.yaml
+---
+#otel-collector svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: dynatrace
+  labels:
+    app: dt-security-events-collector
+spec:
+  selector:
+    app: dt-security-events-collector
+  ports:
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: metrics
+      protocol: TCP
+      port: 8888
+      targetPort: 8888
+  type: ClusterIP
