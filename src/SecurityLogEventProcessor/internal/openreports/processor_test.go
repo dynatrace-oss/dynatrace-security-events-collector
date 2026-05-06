@@ -377,6 +377,7 @@ func TestTransformToSecurityEvent_FieldMapping(t *testing.T) {
 
 	// Verify risk fields
 	assert.Equal(t, 6.9, attrs.AsRaw()["dt.security.risk.score"])
+	assert.Equal(t, "MEDIUM", attrs.AsRaw()["dt.security.risk.level"])
 
 	// Verify object fields
 	assert.Equal(t, "pod-uid-123", attrs.AsRaw()["object.id"])
@@ -398,7 +399,7 @@ func TestFindingSeverity(t *testing.T) {
 		{"high", "high", "high"},
 		{"medium", "medium", "medium"},
 		{"low", "low", "low"},
-		{"empty", "", "MEDIUM"},
+		{"empty", "", "NONE"},
 		{"unknown", "unknown", "unknown"},
 		{"case sensitive critical", "Critical", "Critical"},
 	}
@@ -413,6 +414,34 @@ func TestFindingSeverity(t *testing.T) {
 			processor.transformToSecurityEvent(&logRecord, result, "{}", "", nil, metadata, pcommon.NewMap())
 			severity := logRecord.Attributes().AsRaw()["finding.severity"]
 			assert.Equal(t, tt.expected, severity)
+		})
+	}
+}
+
+func TestRiskLevelMapping(t *testing.T) {
+	tests := []struct {
+		name         string
+		severity     string
+		expectedLevel string
+	}{
+		{"critical", "critical", "CRITICAL"},
+		{"high", "high", "HIGH"},
+		{"medium", "medium", "MEDIUM"},
+		{"low", "low", "LOW"},
+		{"empty", "", "NONE"},
+		{"unknown", "unknown", "NONE"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			processor, _ := NewProcessor(zaptest.NewLogger(t), &Config{Enabled: true})
+			result := Result{Severity: tt.severity}
+			logRecord := plog.NewLogRecord()
+			metadata := map[string]interface{}{"scope.name": "test"}
+
+			processor.transformToSecurityEvent(&logRecord, result, "{}", "", nil, metadata, pcommon.NewMap())
+			riskLevel := logRecord.Attributes().AsRaw()["dt.security.risk.level"]
+			assert.Equal(t, tt.expectedLevel, riskLevel)
 		})
 	}
 }
@@ -615,6 +644,7 @@ func TestProcessLogRecord_WithSeverityAndCategory(t *testing.T) {
 
 	eventAttrs := records[0].Attributes()
 	assert.Equal(t, 8.9, eventAttrs.AsRaw()["dt.security.risk.score"])
+	assert.Equal(t, "HIGH", eventAttrs.AsRaw()["dt.security.risk.level"])
 	assert.Equal(t, "high", eventAttrs.AsRaw()["finding.severity"])
 	assert.Equal(t, "Pod Security Standards (Baseline)", eventAttrs.AsRaw()["compliance.standards"])
 }
