@@ -25,6 +25,7 @@ const (
 	riskLevelMedium        = "MEDIUM"
 	riskLevelLow           = "LOW"
 	riskLevelCritical      = "CRITICAL"
+	riskLevelNone          = "NONE"
 	complianceCompliant    = "COMPLIANT"
 	complianceNonCompliant = "NON_COMPLIANT"
 	k8sKindPod             = "Pod"
@@ -738,15 +739,14 @@ func (p *Processor) transformToSecurityEvent(logRecord *plog.LogRecord, result R
 	// But we still need uppercase for LogRecord severity fields for OpenTelemetry compliance
 	var severityText string
 	if result.Severity != "" {
-		// Store finding.severity as original value from result
 		attrs.PutStr("finding.severity", result.Severity)
-		// Use uppercase version for LogRecord severity fields
 		severityText = mapSeverityToUppercase(result.Severity)
 	} else {
-		// Default to MEDIUM if no severity provided
-		attrs.PutStr("finding.severity", riskLevelMedium)
-		severityText = riskLevelMedium
+		attrs.PutStr("finding.severity", riskLevelNone)
+		severityText = riskLevelNone
 	}
+
+	attrs.PutStr("dt.security.risk.level", severityText)
 
 	// Set LogRecord severity fields to maintain OpenTelemetry log schema compliance
 	// Required for proper log record structure even though severity is also in finding.severity attribute
@@ -842,8 +842,7 @@ func mapSeverityToUppercase(severity string) string {
 	case "low":
 		return riskLevelLow
 	default:
-		// Return as-is if unknown, or default to MEDIUM
-		return riskLevelMedium
+		return riskLevelNone
 	}
 }
 
@@ -860,8 +859,10 @@ func mapSeverityToSeverityNumber(severityText string) plog.SeverityNumber {
 		return plog.SeverityNumberWarn // 13-16, use WARN for medium
 	case riskLevelLow:
 		return plog.SeverityNumberInfo // 9-12, use INFO for low
+	case riskLevelNone:
+		return plog.SeverityNumberUnspecified // 0, unspecified for none
 	default:
-		return plog.SeverityNumberWarn // Default to WARN for unknown
+		return plog.SeverityNumberUnspecified // Default to unspecified for unknown
 	}
 }
 
